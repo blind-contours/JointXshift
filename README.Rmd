@@ -37,19 +37,7 @@ __Authors:__ [David McCoy](https://davidmccoy.org)
 ## What's `JointXshift`?
 
 
-The `JointXshift` R package offers an approach which identifies and estimates the impact interactions in a mixed exposure on an outcome. We define interaction as the counterfactual mean of the outcome under stochastic interventions of two exposures compared to the additive counterfactual mean of the two expowures intervened on indepdentently. These interventions or exposure changes depend on naturally observed values, as described in past literature [@diaz2012population; @haneuse2013estimation].
-
-`JointXshift` builds on work described in [@mccoy2023semiparametric]. However instead of identifying interactions through an semi-parametric definition of an F-statistics and then estimating our interaction target parameter using CV-TMLE pooled across exposure sets, we provide a more streamlined approach. In this package, we identify interactions through g-computation first - evaluating the expected outcome under joint shift compared to the sum of individual shifts using Super Learner. We then rank these estimates as the highest sets of synergy and antagonism. We then use CV-TMLE and pool within the ranks. 
-
-
-The package ensures robustness by employing a k-fold cross-validation framework. This framework helps in estimating a data-adaptive parameter, which is the stochastic shift target parameters for the exposure sets identified as having synergy or antagonism. The process begins by partitioning the data into parameter-generating and estimation samples. In the parameter-generating sample, we identify our ranks of antagonistic and synergistic exposure sets through a machine learning g-computation framework. In the estimation sample we then estimate our interaction target parameter using the doubly robust estimator TMLE to ensure asymptotic efficiency which allows us to construct confidence intervals for our estimates (unlike the g-comp method). 
-
-By using JointXshift, users get access to a tool that offers both k-fold specific and aggregated results for the top synergistic and antagonistic relationships, ensuring that researchers can glean the most information from their data. For a more in-depth exploration, there's an accompanying vignette.
-
-To utilize the package, users need to provide vectors for exposures, covariates, and outcomes. They also specify the respective $\delta$ for each exposure (indicating the degree of shift) and if this delta should be adaptive in response to positivity violations. The `top_n` parameter defines the top number of synergistic, antagonistic, positive and negative ranked impacts to estiamte. A detailed guide is provided in the vignette. With these inputs, `JointXshift` processes the data and delivers tables showcasing fold-specific results and aggregated outcomes, allowing users to glean insights effectively.
-
-`JointXshift` also incorporates features from the `sl3` package [@coyle-sl3-rpkg], facilitating ensemble machine learning in the estimation process. If the user does not specify any stack parameters, `JointXshift` will automatically create an ensemble of machine learning algorithms that strike a balance between flexibility and computational efficiency.
-
+The `JointXshift` is a simple package that compares the expected outcome change under a joint stochastic shift intervention (the change in outcome compared to the observed outcome if all exposures were shifted by a fixed amount), to the additive expected outcome change, the additive impact of each exposure shifted individually. The idea is that if the joint shift is positively larger, this indicates synergistic relationships in the mixed exposure, if it is negative this indicates more antagonistic relationships exist. Of course, if there is no difference between the joint and additive this could indicate no interaction or interactions that are both synergistic and antagonistic and cancel each other out.
 
 ---
 
@@ -116,8 +104,7 @@ head(NIEHS_data_1) %>%
 ```
 
 
-Based on the data key, we expect X1 to have the strongest positive effect, X5 the strongest negative. So we would expect these to take the top ranks for these marginal associations. For interactions we expect to find interactions built into the data that are antagonistic and synergistic. The github page gives details on the types of interactions built into this synthetic data. The above image shows the interaction types that we might expect to find.
-
+We will apply our method to see if there is largely more synergistic or antagonistic relationships in the data. 
 
 ```{r run JointXshift, eval = TRUE, message=FALSE, warning=FALSE}
 
@@ -142,21 +129,23 @@ joint_vs_additive <- sim_results$`Joint vs Additive Effects`
 ```
 
 
+The expected outcome change under additive assumptions is: 
 ```{r additive results}
 additive_results
 ```
 
 
-
+The expected outcome change under a joint shift is: 
 ```{r joint results}
 joint_results
 ```
 
-
+The difference is: 
 ```{r joint vs additive}
 joint_vs_additive
 ```
 
+This indicates that, compared to additive, the expected outcome change is -47.7, indicating possible more antagonistic relationships in the mixed exposure compared to synergistic. 
 
 ---
 

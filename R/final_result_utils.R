@@ -118,10 +118,7 @@ calc_final_ind_shift_param <- function(tmle_fit, exposure, fold_k) {
 #' violations
 #' @export
 
-calc_final_joint_shift_param <- function(joint_shift_fold_results,
-                                         rank,
-                                         fold_k,
-                                         deltas_updated,
+calc_final_joint_shift_param <- function(tmle_fit,
                                          exposures) {
   results <- lapply(joint_shift_fold_results, calc_joint_results)
   results_table <- do.call(rbind, results)

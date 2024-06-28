@@ -1,6 +1,6 @@
 #!/bin/bash
 # Job name:
-#SBATCH --job-name=iter3_InterXshift
+#SBATCH --job-name=iter3_JointXshift
 #
 # Partition:
 #SBATCH --partition=savio2
@@ -22,4 +22,4 @@
 module load r/4.0.3
 
 ### Run Simulation
-R CMD BATCH --no-save ../03_run_simulation_3.R iter_3_InterXshift.Rout
+R CMD BATCH --no-save ../03_run_simulation_3.R iter_3_JointXshift.Rout

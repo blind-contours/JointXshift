@@ -1,6 +1,6 @@
 #!/bin/bash
 # Job name:
-#SBATCH --job-name=single_shift_InterXshift
+#SBATCH --job-name=single_shift_JointXshift
 #
 # Partition:
 #SBATCH --partition=savio2

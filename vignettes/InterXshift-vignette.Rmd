@@ -18,10 +18,11 @@ knitr::opts_chunk$set(
 ```
 
 ```{r libraries, warning=FALSE}
-library(InterXshift)
+library(JointXshift)
 library(devtools)
 library(kableExtra)
 library(sl3)
+library(dplyr)
 
 seed <- 429153
 set.seed(seed)
@@ -29,32 +30,8 @@ set.seed(seed)
 
 ## Motivation 
 
-The motivation behind the package InterXshift is to address the limitations of traditional statistical methods in environmental epidemiology studies. Analysts are often interested in understanding the joint impact of a mixed exposure, i.e. a vector of exposures, but the most important exposures and exposure sets remain unknown. Traditional methods make overly simplistic assumptions, such as linear and additive relationships, and the resulting statistical quantities may not be directly applicable to public policy decisions. More flexible methods offer dose response relationships but do not result in an easily interpretable estimate. Here, we utilize cross-validated targeted learning with stochastic shift interventions to identify exposures in a mixture that have the strongest positive and negative effect. We also define interaction as a comparison of the expected outcome under joint shift to additive shifts. With this definition we identify the top synergistic and antagonistic relationships and provide efficient estimates of stochastic shift interventions. 
+The motivation behind the package JointXshift is to understand the joint impact of intervening on multiple exposures compared to the observed outcome.
 
-
-## Target Parameter 
-
-InterXshift uses data-adaptive machine learning methods to identify the exposures and exposure sets that have the most synergy or antagonism. This is defined based on our target parameter: 
-
-$$
-\begin{align}
-    \Psi_{\text{IE}} = &E[Y | A_i + \delta_i, A_j + \delta_j, \mathbf{A}_{- i,j}, W] \nonumber \\
-              &- \big(E[Y | A_i + \delta_i, \mathbf{A}_{- i}, W] + E[Y | A_j + \delta_j, \mathbf{A}_{- j}, W]\big) \nonumber \\
-              &+ E[Y]
-  \end{align}
-
-$$
-
-Which measures the expected outcome under a shift of two exposures to the sum of their individual impacts. The exposure sets with the largest positive values have synergy meaning their joint impact is more than additive. The exposure sets with the largest negative value have the most antagonism. 
-
-## G-computation Approximation
-
-To identify the most synergistic and antagonistic exposure sets we employ a g-computation framework. We first construct a super learner, or ensemble of machine learning algorithms. We then construct all two-way combinations and for each combination calculate our interaction. We rank these results and select the top positive and negative results which represent synergy and antagonism. 
-
-
-## Sample Splitting 
-
-Because we don't know which exposure sets to estimate our interaction parameter on a priori, we need to split our data and in the training fold find the exposure sets, using the above g-computation framework, and in an estimation sample, efficiently estimate the interaction parameter for these exposure sets so that we can get valid confidence intervals for these data-adaptively identified interactions. This is done using targeted learning.
 
 
 ## Targeted Learning
@@ -62,24 +39,10 @@ Because we don't know which exposure sets to estimate our interaction parameter 
 We use targeted minimum loss based estimation (TMLE) to debias our initial outcome estimates given a shift in exposure such that the resulting estimator is asymptotically unbiased and has the smallest variance. This procedure involves constructing a least favorable submodel which uses a ratio of conditional exposure densities under shift and now shift as a covariate to debias the initial estimates. More details of targeted learning for stochastic shifts are here @diaz2012population
 
 
-## Data Adaptive Delta
-
-For each exposure, the user inputs a respective delta, for example for exposures $M1, M2, M3$ the analyst puts in the `deltas` vector 
-
-```{r deltas, message=FALSE, warning=FALSE}
-deltas <- c("M1" = 1, "M2" = 2.3, "M3" = 1.4)
-```
-
-Which assigns a delta shift amount to each exposure. However, because the user doesn't know the underlying experimentation in the data, a delta that is too big may result in positivity violations which leads to bias and high variance of the estimator. That is, if the user asks for a shift in exposure density that is very unlikely given the data. To solve this, the analyst can also choose to set `adaptive_delta = TRUE` which then makes the shift amount a data adaptive parameter as well. The delta will be reduced until the max of the ratio of densities for each exposure is less than or equal to `hn_trunc_thresh`.
 
 ## Inputs and Outputs 
 
-InterXshift takes in covariates, exposures, an outcome, a list of deltas to shift each exposure by, the estimator (tmle or one step) number of folds for the CV procedure, parallelization parameters and if the delta should be data-adaptive. Also the user defines top_n which is the number of ranked synergistic, antagonistic and individual positive and negative effects to extract from the mixed exposure.
-
-The package then outputs K-fold specific results, the result found in each fold, and the oracle result which is the parameter that is pooled across all the folds. For example, we will get the fold specific synergy results for the rank 1 and rank 2 exposure sets found to have the highest expectation under joint shift compared to positive shift. The pooled parameter is the oracle rank 1, meaning we do a pooled TMLE for all the rank 1 findings across the folds. The same is true for the other parameters. 
-
-
-We get pooled rank synergy, antagonism, positive and negative effects. If the same exposure sets are used across the folds, the pooled estimate is interpretable and has greater power compared to k-fold. If not, the analyst must investigate the k-fold specific results and report consistency of findings. 
+JointXshift takes in covariates, exposures, an outcome, a list of deltas to shift each exposure by, the estimator (tmle or one step), parallelization parameters and if the delta should be data-adaptive. 
 
 ## NHANES Data
 
@@ -168,9 +131,9 @@ exposures_to_keep <- setdiff(exposures, exposures_to_remove)
 ```
 
 
-## Run InterXshift 
+## Run JointXshift 
 
-```{r run InterXshift for NHANES, warning=FALSE, message=FALSE}
+```{r run JointXshift for NHANES, warning=FALSE, message=FALSE}
 
 
 ptm <- proc.time()
@@ -179,28 +142,21 @@ w <- NHANES_eurocim[, covariates]
 a <- NHANES_eurocim[, exposures_to_keep]
 y <- NHANES_eurocim$TELOMEAN
 
-deltas <- a %>%
-  summarise(across(everything(), sd, na.rm = TRUE)) %>%
-  as.list()
+deltas <- list("LBX074LA" = 1, "LBX099LA" = 1, "LBXD03LA" = 1, "LBXD05LA" = 1, "LBXF03LA" = 1, "LBXF04LA" = 1, "LBXF08LA" = 1, "LBXPCBLA" = 1 )
 
-# Make the deltas negative
-deltas <- lapply(deltas, function(x) -x)
-
-NIEH_results <- InterXshift(
+NIEH_results <- JointXshift(
   w = w,
   a = a,
   y = y,
   deltas = deltas,
-  n_folds = 10,
+  n_folds = 7,
   outcome_type = "continuous",
   parallel = TRUE,
   parallel_type = "multi_session",
   num_cores = 5,
   seed = seed,
-  adaptive_delta = FALSE,
-  top_n = 1,
-  density_classification = TRUE
-)
+  hn_trunc_thresh = 50
+  )
 
 proc.time() - ptm
 ```

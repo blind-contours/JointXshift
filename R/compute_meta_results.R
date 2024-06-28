@@ -1,16 +1,16 @@
 
-compute_meta_results <- function(InterXshift_results, parameter) {
+compute_meta_results <- function(JointXshift_results, parameter) {
   if (parameter == "Indiv Shift") {
-    stratified_results <- InterXshift_results$`Indiv Shift Results`
+    stratified_results <- JointXshift_results$`Indiv Shift Results`
   } else if (parameter == "Joint Shift") {
     stratified_results <-
-      InterXshift_results$`Joint Shift Results` %>%
+      JointXshift_results$`Joint Shift Results` %>%
       dplyr::group_by(Condition, Variables)
     stratified_results <- dplyr::group_split(stratified_results)
   } else {
     stratified_results <- split(
-      InterXshift_results$`Effect Mod Results`,
-      InterXshift_results$`Effect Mod Results`$Condition
+      JointXshift_results$`Effect Mod Results`,
+      JointXshift_results$`Effect Mod Results`$Condition
     )
   }
 

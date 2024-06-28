@@ -3,7 +3,7 @@
 \name{create_sls}
 \alias{create_sls}
 \title{Create default Super Learner estimators for the data adaptive
-and nuisance parameters used in \code{InterXshift}}
+and nuisance parameters used in \code{JointXshift}}
 \usage{
 create_sls()
 }

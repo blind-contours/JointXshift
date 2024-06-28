@@ -26,34 +26,22 @@
 #' augmented_validation_data <- result$av_dup
 #'
 #' @export
-create_augmented_data <- function(at, av, delta, var, covars) {
-  n_at <- nrow(at)
-  n_av <- nrow(av)
-  at_dup <- at #at[rep(1:n, each = 2), ]
-  at_dup$intervention <- rep(1, times = n_at)
-  at$intervention <- rep(0, times = n_at)
+create_augmented_data <- function(data, deltas, exposures, covars) {
+  n <- nrow(data)
 
-  for ( i in 1:length(var)) {
-    v <- var[[i]]
-    d <- delta[[i]]
-    at_dup[[v]] <- at_dup[[v]] + d
+  data_dup <- data
+  data_dup$intervention <- rep(1, times = n)
+  data$intervention <- rep(0, times = n)
+
+  for ( i in 1:length(exposures)) {
+    v <- exposures[[i]]
+    d <- deltas[[i]]
+    data_dup[[v]] <- data_dup[[v]] + d
   }
 
-  at_dup <- rbind(at, at_dup)
+  data_dup <- rbind(data, data_dup)
 
-  av_dup <- av #at[rep(1:n, each = 2), ]
-  av_dup$intervention <- rep(1, times = n_av)
-  av$intervention <- rep(0, times = n_av)
-
-  for ( i in 1:length(var)) {
-    v <- var[[i]]
-    d <- delta[[i]]
-    av_dup[[v]] <- av_dup[[v]] + d
-  }
-
-  av_dup <- rbind(av, av_dup)
-
-  return(list("av_dup" = av_dup, "at_dup" = at_dup))
+  return(data_dup)
 }
 
 ###############################################################################
@@ -87,64 +75,43 @@ create_augmented_data <- function(at, av, delta, var, covars) {
 #' validation_density_ratios <- result$Hn_av
 #'
 #' @export
-estimate_density_ratio <- function(at, av, delta, var, covars, classifier) {
-  augmented_data <- create_augmented_data(at, av, delta, var, covars)
+estimate_density_ratio <- function(data, deltas, exposures, covars, classifier) {
+  augmented_data <- create_augmented_data(data, deltas, exposures, covars)
 
-  at_sl_task <- sl3::sl3_Task$new(
-    data = augmented_data$at_dup,
-    outcome = "intervention",
-    covariates = covars,
-    outcome_type = "binary"
-  )
-
-  av_sl_task <- sl3::sl3_Task$new(
-    data = augmented_data$av_dup,
+  sl_task <- sl3::sl3_Task$new(
+    data = augmented_data,
     outcome = "intervention",
     covariates = covars,
     outcome_type = "binary"
   )
 
   sl <- sl3::Lrnr_sl$new(
-    learners = mu_learner,
+    learners = classifier,
     metalearner = sl3::Lrnr_nnls$new()
   )
 
 
-  at_class_model <- suppressWarnings(suppressMessages(sl$train(at_sl_task)))
+  class_model <- suppressWarnings(suppressMessages(sl$train(sl_task)))
 
   # at predictions -----------
-  at_class_model_preds <- at_class_model$predict(at_sl_task)
-  av_class_model_preds <- at_class_model$predict(av_sl_task)
+  class_model_preds <- class_model$predict(sl_task)
 
   # Compute the density ratios for shifted exposures
-  at_u_t_shift <- at_class_model_preds[augmented_data$at_dup$intervention == 1]
-  at_density_ratio_shift <- at_u_t_shift / (1 - at_u_t_shift)
-
-  av_u_t_shift <- av_class_model_preds[augmented_data$av_dup$intervention == 1]
-  av_density_ratio_shift <- av_u_t_shift / (1 - av_u_t_shift)
+  data_u_t_shift <- class_model_preds[augmented_data$intervention == 1]
+  data_density_ratio_shift <- data_u_t_shift / (1 - data_u_t_shift)
 
   # Compute the density ratios for unshifted exposures
-  at_u_t_unshift <- at_class_model_preds[augmented_data$at_dup$intervention == 0]
-  at_density_ratio_unshift <- at_u_t_unshift / (1 - at_u_t_unshift)
-
-  av_u_t_unshift <- av_class_model_preds[augmented_data$av_dup$intervention == 0]
-  av_density_ratio_unshift <- av_u_t_unshift / (1 - av_u_t_unshift)
+  data_density_ratio_unshift <- 1
 
   # Combine the density ratios into a data.table
-  at_density_ratios <- data.table::as.data.table(
-    cbind(at_density_ratio_unshift, at_density_ratio_shift)
+  density_ratios <- data.table::as.data.table(
+    cbind(data_density_ratio_unshift, data_density_ratio_shift)
   )
 
-  data.table::setnames(at_density_ratios, c("noshift", "shift"))
+  data.table::setnames(density_ratios, c("noshift", "shift"))
 
 
-  av_density_ratios <- data.table::as.data.table(
-    cbind(av_density_ratio_unshift, av_density_ratio_shift)
-  )
-
-  data.table::setnames(av_density_ratios, c("noshift", "shift"))
-
-  return(list(Hn_at = at_density_ratios, Hn_av = av_density_ratios))
+  return(density_ratios)
 }
 ###############################################################################
 #' @title Calculate the Joint Parameter
@@ -162,10 +129,19 @@ calc_joint_results <- function(results_element) {
   CI <- calc_CIs(psi, se_ests)
   p_vals <- calc_pvals(psi, se_ests)
 
-  joint_results <- c(psi, psi_var, se_ests, CI[1], CI[2], p_vals)
+  # Create a data frame with relevant column names
+  joint_results <- data.frame(
+    psi = psi,
+    psi_var = psi_var,
+    se_ests = se_ests,
+    CI_lower = CI[1],
+    CI_upper = CI[2],
+    p_vals = p_vals
+  )
 
   return(joint_results)
 }
+
 
 ###############################################################################
 #' @title Calculates the Interaction Parameter
@@ -276,10 +252,10 @@ calc_pvals <- function(psi, variance) {
   return(p_value)
 }
 
-is.InterXshift <- function(x) {
-  class(x) == "InterXshift"
+is.JointXshift <- function(x) {
+  class(x) == "JointXshift"
 }
 
-is.InterXshift <- function(x) {
-  class(x) == "InterXshift_msm"
+is.JointXshift <- function(x) {
+  class(x) == "JointXshift_msm"
 }

@@ -5,7 +5,7 @@ library(dplyr)
 library(magrittr)
 library(stringr)
 source(here("sandbox/02_fit_estimators.R"))
-library(InterXshift)
+library(JointXshift)
 
 # simulation parameters
 n_sim <- 10 # number of simulations
@@ -77,5 +77,5 @@ for (sample_size in n_obs) {
 # save results to file
 saveRDS(
   object = sim_results_df,
-  file = here("sandbox/data", paste0("InterXshift_", "8_sim", ".rds"))
+  file = here("sandbox/data", paste0("JointXshift_", "8_sim", ".rds"))
 )

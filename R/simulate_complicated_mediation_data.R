@@ -1,4 +1,4 @@
-#' DGP for testing InterXshift with mediation (complicated!)
+#' DGP for testing JointXshift with mediation (complicated!)
 #'
 #' @param n_obs Number of observations
 #' @param delta Delta for M1 Exposure

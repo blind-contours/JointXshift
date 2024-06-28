@@ -48,7 +48,7 @@ tmle_exposhift <- function(data_internal,
                            Qn_scaled,
                            Qn_unscaled,
                            Hn,
-                           fluctuation = c("standard", "weighted"),
+                           fluctuation = "standard",
                            eif_reg_type = c("hal", "glm"),
                            y,
                            estimator = "tmle") {
@@ -101,7 +101,7 @@ tmle_exposhift <- function(data_internal,
 
 
   # S3-ify and return output object
-  class(exposure_shift_out) <- "InterXshift"
+  class(exposure_shift_out) <- "JointXshift"
   return(exposure_shift_out)
 }
 

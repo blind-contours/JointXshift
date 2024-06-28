@@ -1,18 +1,18 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# R/`InterXShift`
+# R/`JointXshift`
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/blind-contours/InterXShift/workflows/R-CMD-check/badge.svg)](https://github.com/blind-contours/InterXShift/actions)
+[![R-CMD-check](https://github.com/blind-contours/JointXshift/workflows/R-CMD-check/badge.svg)](https://github.com/blind-contours/JointXshift/actions)
 [![Coverage
-Status](https://img.shields.io/codecov/c/github/blind-contours/InterXShift/master.svg)](https://codecov.io/github/blind-contours/InterXShift?branch=master)
-[![CRAN](https://www.r-pkg.org/badges/version/InterXShift)](https://www.r-pkg.org/pkg/InterXShift)
+Status](https://img.shields.io/codecov/c/github/blind-contours/JointXshift/master.svg)](https://codecov.io/github/blind-contours/JointXshift?branch=master)
+[![CRAN](https://www.r-pkg.org/badges/version/JointXshift)](https://www.r-pkg.org/pkg/JointXshift)
 [![CRAN
-downloads](https://cranlogs.r-pkg.org/badges/InterXShift)](https://CRAN.R-project.org/package=InterXShift)
+downloads](https://cranlogs.r-pkg.org/badges/JointXshift)](https://CRAN.R-project.org/package=JointXshift)
 [![CRAN total
-downloads](http://cranlogs.r-pkg.org/badges/grand-total/InterXShift)](https://CRAN.R-project.org/package=InterXShift)
+downloads](http://cranlogs.r-pkg.org/badges/grand-total/JointXshift)](https://CRAN.R-project.org/package=JointXshift)
 [![Project Status: Active – The project has reached a stable, usable
 state and is being actively
 developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
@@ -28,9 +28,9 @@ license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://open
 
 ------------------------------------------------------------------------
 
-## What’s `InterXshift`?
+## What’s `JointXshift`?
 
-The `InterXshift` R package offers an approach which identifies and
+The `JointXshift` R package offers an approach which identifies and
 estimates the impact interactions in a mixed exposure on an outcome. We
 define interaction as the counterfactual mean of the outcome under
 stochastic interventions of two exposures compared to the additive
@@ -39,7 +39,7 @@ These interventions or exposure changes depend on naturally observed
 values, as described in past literature (Dı́az and van der Laan 2012;
 Haneuse and Rotnitzky 2013).
 
-`InterXshift` builds on work described in (McCoy et al. 2023). However
+`JointXshift` builds on work described in (McCoy et al. 2023). However
 instead of identifying interactions through an semi-parametric
 definition of an F-statistics and then estimating our interaction target
 parameter using CV-TMLE pooled across exposure sets, we provide a more
@@ -61,7 +61,7 @@ interaction target parameter using the doubly robust estimator TMLE to
 ensure asymptotic efficiency which allows us to construct confidence
 intervals for our estimates (unlike the g-comp method).
 
-By using InterXshift, users get access to a tool that offers both k-fold
+By using JointXshift, users get access to a tool that offers both k-fold
 specific and aggregated results for the top synergistic and antagonistic
 relationships, ensuring that researchers can glean the most information
 from their data. For a more in-depth exploration, there’s an
@@ -73,14 +73,14 @@ each exposure (indicating the degree of shift) and if this delta should
 be adaptive in response to positivity violations. The `top_n` parameter
 defines the top number of synergistic, antagonistic, positive and
 negative ranked impacts to estiamte. A detailed guide is provided in the
-vignette. With these inputs, `InterXshift` processes the data and
+vignette. With these inputs, `JointXshift` processes the data and
 delivers tables showcasing fold-specific results and aggregated
 outcomes, allowing users to glean insights effectively.
 
-`InterXshift` also incorporates features from the `sl3` package (Coyle,
+`JointXshift` also incorporates features from the `sl3` package (Coyle,
 Hejazi, Malenica, et al. 2022), facilitating ensemble machine learning
 in the estimation process. If the user does not specify any stack
-parameters, `InterXshift` will automatically create an ensemble of
+parameters, `JointXshift` will automatically create an ensemble of
 machine learning algorithms that strike a balance between flexibility
 and computational efficiency.
 
@@ -88,39 +88,39 @@ and computational efficiency.
 
 ## Installation
 
-*Note:* Because the `InterXshift` package (currently) depends on `sl3`
+*Note:* Because the `JointXshift` package (currently) depends on `sl3`
 that allows ensemble machine learning to be used for nuisance parameter
-estimation and `sl3` is not on CRAN the `InterXshift` package is not
+estimation and `sl3` is not on CRAN the `JointXshift` package is not
 available on CRAN and must be downloaded here.
 
-There are many depedencies for `InterXshift` so it’s easier to break up
+There are many depedencies for `JointXshift` so it’s easier to break up
 installation of the various packages to ensure proper installation.
 
 First install the basis estimators used in the data-adaptive variable
 discovery of the exposure and covariate space:
 
-`InterXshift` uses the `sl3` package to build ensemble machine learners
+`JointXshift` uses the `sl3` package to build ensemble machine learners
 for each nuisance parameter.
 
 ``` r
 remotes::install_github("tlverse/sl3@devel")
 ```
 
-Make sure `sl3` installs correctly then install `InterXshift`
+Make sure `sl3` installs correctly then install `JointXshift`
 
 ``` r
-remotes::install_github("blind-contours/InterXshift@main")
+remotes::install_github("blind-contours/JointXshift@main")
 ```
 
 ------------------------------------------------------------------------
 
 ## Example
 
-To illustrate how `InterXshift` may be used to ascertain the effect of a
+To illustrate how `JointXshift` may be used to ascertain the effect of a
 mixed exposure, consider the following example:
 
 ``` r
-library(InterXshift)
+library(JointXshift)
 library(devtools)
 #> Loading required package: usethis
 library(kableExtra)
@@ -136,7 +136,7 @@ marginal effects and certain interactions. Found here:
 <https://github.com/niehs-prime/2015-NIEHS-MIxtures-Workshop>
 
 ``` r
-data("NIEHS_data_1", package = "InterXshift")
+data("NIEHS_data_1", package = "JointXshift")
 ```
 
 ``` r
@@ -420,7 +420,7 @@ types that we might expect to find.
 ``` r
 
 ptm <- proc.time()
-sim_results <- InterXshift(
+sim_results <- JointXshift(
   w = w,
   a = a,
   y = y,
@@ -2546,9 +2546,9 @@ relationships consistently for our definition of synergy and antagonism.
 ## Issues
 
 If you encounter any bugs or have any specific feature requests, please
-[file an issue](https://github.com/blind-contours/InterXshift/issues).
+[file an issue](https://github.com/blind-contours/JointXshift/issues).
 Further details on filing issues are provided in our [contribution
-guidelines](https://github.com/blind-contours/%20InterXshift/main/contributing.md).
+guidelines](https://github.com/blind-contours/%20JointXshift/main/contributing.md).
 
 ------------------------------------------------------------------------
 
@@ -2556,14 +2556,14 @@ guidelines](https://github.com/blind-contours/%20InterXshift/main/contributing.m
 
 Contributions are very welcome. Interested contributors should consult
 our [contribution
-guidelines](https://github.com/blind-contours/InterXshift/blob/master/CONTRIBUTING.md)
+guidelines](https://github.com/blind-contours/JointXshift/blob/master/CONTRIBUTING.md)
 prior to submitting a pull request.
 
 ------------------------------------------------------------------------
 
 ## Citation
 
-After using the `InterXshift` R package, please cite the following:
+After using the `JointXshift` R package, please cite the following:
 
 ------------------------------------------------------------------------
 

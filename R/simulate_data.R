@@ -1,4 +1,4 @@
-#' DGP for testing InterXshift without mediation
+#' DGP for testing JointXshift without mediation
 #'
 #' @param n_obs Number of observations
 #' @param sigma_mod Sigma matrix of exposures

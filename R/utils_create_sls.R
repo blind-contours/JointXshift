@@ -1,5 +1,5 @@
 #' @title Create default Super Learner estimators for the data adaptive
-#' and nuisance parameters used in `InterXshift`
+#' and nuisance parameters used in `JointXshift`
 #' @description If Super Learners are not passed to the stack arguments
 #' this function is used to create some default ensemble machine
 #' learning estimators for each parameter. The default estimators are
@@ -144,19 +144,14 @@ create_sls <- function() {
   lrnr_nnet <- Lrnr_nnet$new()
 
   learners <- c(
+    lrnr_ridge,
+    lrnr_lasso,
     lrnr_ranger_100,
-    lrnr_polspline,
-    lrnr_xgboost_100,
-    lrnr_lasso
+    lrnr_xgboost_df,
+    lrnr_polspline
   )
 
-  quant_stack <- make_learner(Stack, learners)
-  discrete_sl_metalrn <- sl3::Lrnr_cv_selector$new(sl3::loss_loglik_multinomial)
 
-  quant_lrnr <- sl3::Lrnr_sl$new(
-    learners = quant_stack,
-    metalearner = discrete_sl_metalrn,
-  )
 
   return(list(
     "pi_learner" = pi_learner,

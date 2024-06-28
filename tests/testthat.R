@@ -1,4 +1,4 @@
 library(testthat)
-library(InterXshift)
+library(JointXshift)
 
-test_check("InterXshift")
+test_check("JointXshift")

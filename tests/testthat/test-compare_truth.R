@@ -1,4 +1,4 @@
-# context("Ensure truth for moderate sample size is covered by InterXshift' CIs ")
+# context("Ensure truth for moderate sample size is covered by JointXshift' CIs ")
 # library(dplyr)
 #
 # data_shift1 <- simulate_data(n_obs = 2000, shift_var_index = 1)
@@ -13,7 +13,7 @@
 #
 # ptm <- proc.time()
 #
-# sim_results <- InterXshift(
+# sim_results <- JointXshift(
 #   w = w,
 #   a = a,
 #   y = y,

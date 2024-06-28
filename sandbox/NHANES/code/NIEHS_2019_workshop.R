@@ -1,4 +1,4 @@
-library(InterXshift)
+library(JointXshift)
 library(readr)
 library(here)
 
@@ -65,7 +65,7 @@ a <- NIEHS_2019[, exposures]
 y <- NIEHS_2019$TELOMEAN
 
 
-nhanes_results <- InterXshift(
+nhanes_results <- JointXshift(
   w = w,
   a = a,
   y = y,
@@ -79,7 +79,7 @@ nhanes_results <- InterXshift(
 
 saveRDS(
   object = nhanes_results,
-  file = here("sandbox/NHANES/output", paste0("InterXshift_", "nhanes_prime", ".rds"))
+  file = here("sandbox/NHANES/output", paste0("JointXshift_", "nhanes_prime", ".rds"))
 )
 
 
